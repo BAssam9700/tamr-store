@@ -5,120 +5,101 @@ const app = express();
 app.use(express.json());
 app.use(express.static(__dirname));
 
-/* =========================
-   🧠 البيانات (مؤقتة)
-========================= */
-let orders = [];
-let supports = [];
+// ===== ملفات البيانات =====
+const PRODUCTS_FILE = 'products.json';
+const ORDERS_FILE = 'orders.json';
+const TICKETS_FILE = 'tickets.json';
 
-/* =========================
-   📦 المنتجات
-========================= */
+// ===== دوال مساعدة =====
+function readData(file) {
+  if (!fs.existsSync(file)) return [];
+  return JSON.parse(fs.readFileSync(file));
+}
+
+function writeData(file, data) {
+  fs.writeFileSync(file, JSON.stringify(data, null, 2));
+}
+
+// ===== المنتجات =====
 app.get('/products', (req, res) => {
-  try {
-    const data = fs.readFileSync('products.json','utf8');
-    res.json(JSON.parse(data));
-  } catch {
-    res.json([]);
-  }
+  res.json(readData(PRODUCTS_FILE));
 });
 
 app.post('/add-product', (req, res) => {
-  const newProduct = req.body;
-
-  let products = [];
-  try {
-    products = JSON.parse(fs.readFileSync('products.json','utf8'));
-  } catch {}
-
-  products.push(newProduct);
-
-  fs.writeFileSync('products.json', JSON.stringify(products,null,2));
-
-  res.json({message:"تم إضافة المنتج ✅"});
+  const products = readData(PRODUCTS_FILE);
+  products.push(req.body);
+  writeData(PRODUCTS_FILE, products);
+  res.json({ success: true });
 });
 
-/* =========================
-   🛒 الطلبات (Checkout)
-========================= */
-app.post('/order', (req, res) => {
-  orders.push({
-    id: Date.now(),
-    items: req.body,
-    status: "جديد",
-    date: new Date()
-  });
-
-  res.json({message:"تم الطلب ✅"});
-});
-
+// ===== الطلبات =====
 app.get('/orders', (req, res) => {
-  res.json(orders);
+  res.json(readData(ORDERS_FILE));
 });
 
-/* تغيير حالة الطلب */
-app.post('/order-status', (req, res) => {
-  const {id, status} = req.body;
+app.post('/order', (req, res) => {
+  const orders = readData(ORDERS_FILE);
+  const newOrder = {
+    ...req.body,
+    status: 'pending',
+    time: new Date().toLocaleString()
+  };
+  orders.push(newOrder);
+  writeData(ORDERS_FILE, orders);
+  res.json({ success: true });
+});
 
-  orders = orders.map(o=>{
-    if(o.id == id){
-      o.status = status;
+app.post('/complete-order', (req, res) => {
+  let orders = readData(ORDERS_FILE);
+  orders = orders.map(o => {
+    if (o.time === req.body.time) {
+      o.status = 'done';
     }
     return o;
   });
-
-  res.json({message:"تم تحديث الحالة ✅"});
+  writeData(ORDERS_FILE, orders);
+  res.json({ success: true });
 });
 
-/* =========================
-   📩 الدعم الفني
-========================= */
-
-/* إرسال تذكرة */
-app.post('/support', (req, res) => {
-  supports.push({
-    id: Date.now(),
-    user: req.body.user,
-    title: req.body.title,
-    message: req.body.message,
-    reply: "",
-    date: new Date()
-  });
-
-  res.json({message:"تم إرسال التذكرة ✅"});
+// ===== الدعم =====
+app.get('/tickets', (req, res) => {
+  res.json(readData(TICKETS_FILE));
 });
 
-/* عرض التذاكر */
-app.get('/support-list', (req, res) => {
-  res.json(supports);
+app.post('/send-ticket', (req, res) => {
+  const tickets = readData(TICKETS_FILE);
+  const newTicket = {
+    ...req.body,
+    reply: null,
+    time: new Date().toLocaleString()
+  };
+  tickets.push(newTicket);
+  writeData(TICKETS_FILE, tickets);
+  res.json({ success: true });
 });
 
-/* رد الأدمن */
-app.post('/reply', (req, res) => {
-  const {id, reply} = req.body;
-
-  supports = supports.map(s=>{
-    if(s.id == id){
-      s.reply = reply;
+app.post('/reply-ticket', (req, res) => {
+  let tickets = readData(TICKETS_FILE);
+  tickets = tickets.map(t => {
+    if (t.time === req.body.time) {
+      t.reply = req.body.reply;
     }
-    return s;
+    return t;
   });
-
-  res.json({message:"تم الرد ✅"});
+  writeData(TICKETS_FILE, tickets);
+  res.json({ success: true });
 });
 
-/* حذف التذكرة */
 app.post('/delete-ticket', (req, res) => {
-  const {id} = req.body;
-
-  supports = supports.filter(s=>s.id != id);
-
-  res.json({message:"تم حذف التذكرة 🗑️"});
+  let tickets = readData(TICKETS_FILE);
+  tickets = tickets.filter(t => t.time !== req.body.time);
+  writeData(TICKETS_FILE, tickets);
+  res.json({ success: true });
 });
 
-/* =========================
-   🚀 تشغيل السيرفر
-========================= */
-app.listen(3000, () => {
-  console.log("Server running on http://localhost:3000");
+// ===== التشغيل (المهم لRender) =====
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log("Server running on port " + PORT);
 });
