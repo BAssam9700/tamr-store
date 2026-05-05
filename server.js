@@ -1,103 +1,96 @@
 const express = require('express');
 const fs = require('fs');
-const app = express();
+const path = require('path');
 
+const app = express();
 app.use(express.json());
 app.use(express.static(__dirname));
 
-// ===== ملفات البيانات =====
-const PRODUCTS_FILE = 'products.json';
-const ORDERS_FILE = 'orders.json';
-const TICKETS_FILE = 'tickets.json';
+// ملفات البيانات
+const DATA_FILE = path.join(__dirname, 'data.json');
+const ORDERS_FILE = path.join(__dirname, 'orders.json');
+const TICKETS_FILE = path.join(__dirname, 'tickets.json');
 
-// ===== دوال مساعدة =====
-function readData(file) {
+// تحميل البيانات
+function load(file) {
   if (!fs.existsSync(file)) return [];
   return JSON.parse(fs.readFileSync(file));
 }
 
-function writeData(file, data) {
+function save(file, data) {
   fs.writeFileSync(file, JSON.stringify(data, null, 2));
 }
 
-// ===== المنتجات =====
+// ====== المنتجات ======
 app.get('/products', (req, res) => {
-  res.json(readData(PRODUCTS_FILE));
+  const products = load(DATA_FILE);
+  res.json(products);
 });
 
-app.post('/add-product', (req, res) => {
-  const products = readData(PRODUCTS_FILE);
-  products.push(req.body);
-  writeData(PRODUCTS_FILE, products);
-  res.json({ success: true });
-});
-
-// ===== الطلبات =====
+// ====== الطلبات ======
 app.get('/orders', (req, res) => {
-  res.json(readData(ORDERS_FILE));
+  const orders = load(ORDERS_FILE);
+  res.json(orders);
 });
 
-app.post('/order', (req, res) => {
-  const orders = readData(ORDERS_FILE);
-  const newOrder = {
-    ...req.body,
-    status: 'pending',
-    time: new Date().toLocaleString()
-  };
+app.post('/orders', (req, res) => {
+  const orders = load(ORDERS_FILE);
+  const newOrder = req.body;
+
+  newOrder.id = Date.now();
   orders.push(newOrder);
-  writeData(ORDERS_FILE, orders);
+
+  save(ORDERS_FILE, orders);
   res.json({ success: true });
 });
 
-app.post('/complete-order', (req, res) => {
-  let orders = readData(ORDERS_FILE);
-  orders = orders.map(o => {
-    if (o.time === req.body.time) {
-      o.status = 'done';
-    }
-    return o;
-  });
-  writeData(ORDERS_FILE, orders);
-  res.json({ success: true });
-});
-
-// ===== الدعم =====
+// ====== التذاكر ======
 app.get('/tickets', (req, res) => {
-  res.json(readData(TICKETS_FILE));
+  const tickets = load(TICKETS_FILE);
+  res.json(tickets);
 });
 
-app.post('/send-ticket', (req, res) => {
-  const tickets = readData(TICKETS_FILE);
+app.post('/tickets', (req, res) => {
+  const tickets = load(TICKETS_FILE);
+
   const newTicket = {
-    ...req.body,
-    reply: null,
-    time: new Date().toLocaleString()
+    id: Date.now(),
+    message: req.body.message,
+    reply: null
   };
+
   tickets.push(newTicket);
-  writeData(TICKETS_FILE, tickets);
+  save(TICKETS_FILE, tickets);
+
   res.json({ success: true });
 });
 
-app.post('/reply-ticket', (req, res) => {
-  let tickets = readData(TICKETS_FILE);
-  tickets = tickets.map(t => {
-    if (t.time === req.body.time) {
-      t.reply = req.body.reply;
-    }
-    return t;
-  });
-  writeData(TICKETS_FILE, tickets);
+// ====== الرد على التذكرة ======
+app.post('/reply', (req, res) => {
+  const { id, reply } = req.body;
+  const tickets = load(TICKETS_FILE);
+
+  const ticket = tickets.find(t => t.id == id);
+  if (ticket) {
+    ticket.reply = reply;
+    save(TICKETS_FILE, tickets);
+    res.json({ success: true });
+  } else {
+    res.json({ success: false });
+  }
+});
+
+// ====== حذف التذكرة ======
+app.delete('/tickets/:id', (req, res) => {
+  let tickets = load(TICKETS_FILE);
+
+  tickets = tickets.filter(t => t.id != req.params.id);
+
+  save(TICKETS_FILE, tickets);
   res.json({ success: true });
 });
 
-app.post('/delete-ticket', (req, res) => {
-  let tickets = readData(TICKETS_FILE);
-  tickets = tickets.filter(t => t.time !== req.body.time);
-  writeData(TICKETS_FILE, tickets);
-  res.json({ success: true });
-});
-
-// ===== التشغيل (المهم لRender) =====
+// ====== تشغيل السيرفر (المهم 👇) ======
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
