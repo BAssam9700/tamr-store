@@ -1,0 +1,27 @@
+[
+  {
+    "name": "تمر سكري",
+    "price": 25,
+    "image": "https://images.unsplash.com/photo-1604908554027-1d6c7fdd7c32"
+  },
+  {
+    "name": "تمر خلاص",
+    "price": 30,
+    "image": "https://images.unsplash.com/photo-1590080877777-95c52e52e24f"
+  },
+  {
+    "name": "تمر",
+    "price": "14",
+    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRmL__bSAN7SBLSTq2NYOQVDvm0ZxmGPYb2NSfsXthwNIfwDogHE8llK3QFT1ydBGMgRN0BpWyCCv8duun9Lc942mpnH3gdnjgbXeY1cH3jSQ&s=10"
+  },
+  {
+    "name": "تمر",
+    "price": "14",
+    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRmL__bSAN7SBLSTq2NYOQVDvm0ZxmGPYb2NSfsXthwNIfwDogHE8llK3QFT1ydBGMgRN0BpWyCCv8duun9Lc942mpnH3gdnjgbXeY1cH3jSQ&s=10"
+  },
+  {
+    "name": "تمر",
+    "price": "14",
+    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRmL__bSAN7SBLSTq2NYOQVDvm0ZxmGPYb2NSfsXthwNIfwDogHE8llK3QFT1ydBGMgRN0BpWyCCv8duun9Lc942mpnH3gdnjgbXeY1cH3jSQ&s=10"
+  }
+]

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>متجر التمور</title>
+
+<style>
+body {
+  background:#0f172a;
+  color:white;
+  text-align:center;
+  font-family:Arial;
+}
+
+.card {
+  background:#1e293b;
+  margin:20px auto;
+  padding:20px;
+  width:300px;
+  border-radius:15px;
+}
+
+button {
+  padding:10px;
+  margin:5px;
+  background:#f59e0b;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+.top {
+  position:fixed;
+  top:20px;
+  left:20px;
+}
+
+.top button {
+  display:block;
+  margin-bottom:10px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🛒 متجر التمور</h1>
+
+<!-- 🔝 الأزرار -->
+<div class="top">
+  🛒 السلة: <span id="count">0</span>
+
+  <button onclick="goCart()">عرض السلة</button>
+  <button onclick="goSupport()">الدعم 📩</button>
+  <button onclick="logout()">تسجيل خروج</button>
+</div>
+
+<!-- المنتجات -->
+<div id="products"></div>
+
+<script>
+
+/* تحقق تسجيل الدخول */
+let user = localStorage.getItem("user");
+
+if(!user){
+  alert("سجل دخول أول");
+  location.href="login.html";
+}
+
+/* السلة */
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+function updateCart(){
+  document.getElementById("count").innerText = cart.length;
+}
+
+/* الانتقال */
+function goCart(){
+  location.href="cart.html";
+}
+
+function goSupport(){
+  location.href="support.html";
+}
+
+function logout(){
+  localStorage.removeItem("user");
+  location.href="login.html";
+}
+
+/* عرض المنتجات */
+fetch('/products')
+.then(r=>r.json())
+.then(data=>{
+  const box = document.getElementById("products");
+
+  data.forEach(p=>{
+    const div = document.createElement("div");
+    div.className="card";
+
+    div.innerHTML=`
+      <img src="${p.image}" width="120"><br>
+      <h3>${p.name}</h3>
+      <p>${p.price} ريال</p>
+      <button onclick='add(${JSON.stringify(p)})'>أضف للسلة</button>
+    `;
+
+    box.appendChild(div);
+  });
+});
+
+/* إضافة للسلة */
+function add(p){
+  cart.push(p);
+  localStorage.setItem("cart", JSON.stringify(cart));
+  updateCart();
+}
+
+updateCart();
+
+</script>
+
+</body>
+</html>

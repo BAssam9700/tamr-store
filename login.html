@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>تسجيل الدخول</title>
+
+<style>
+body {
+  background:#0f172a;
+  color:white;
+  font-family:Arial;
+  text-align:center;
+}
+
+.box {
+  background:#1e293b;
+  padding:30px;
+  margin:100px auto;
+  width:300px;
+  border-radius:15px;
+}
+
+input {
+  padding:10px;
+  margin:10px;
+  width:80%;
+}
+
+button {
+  padding:10px;
+  margin:10px;
+  background:#f59e0b;
+  border:none;
+  cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+  <h2>🔐 تسجيل الدخول</h2>
+
+  <input id="email" placeholder="الإيميل"><br>
+  <input id="password" type="password" placeholder="كلمة المرور"><br>
+
+  <button onclick="login()">دخول</button>
+
+  <h3>إنشاء حساب</h3>
+
+  <input id="name" placeholder="الاسم"><br>
+  <input id="email2" placeholder="الإيميل"><br>
+  <input id="password2" type="password" placeholder="كلمة المرور"><br>
+
+  <button onclick="register()">تسجيل</button>
+</div>
+
+<script>
+
+/* =========================
+   🔐 تسجيل الدخول
+========================= */
+function login(){
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  // 👑 الأدمن
+  if(email === "admin@test.com" && password === "1234"){
+    localStorage.setItem("user", "admin@test.com");
+    location.href = "admin.html";
+    return;
+  }
+
+  // 👤 مستخدم عادي
+  if(email && password){
+    localStorage.setItem("user", email);
+    location.href = "store.html";
+    return;
+  }
+
+  alert("خطأ في البيانات ❌");
+}
+
+/* =========================
+   🆕 تسجيل حساب
+========================= */
+function register(){
+  const name = document.getElementById("name").value;
+  const email = document.getElementById("email2").value;
+  const password = document.getElementById("password2").value;
+
+  if(!name || !email || !password){
+    alert("عبّ كل الحقول ❌");
+    return;
+  }
+
+  alert("تم إنشاء الحساب ✅");
+
+  localStorage.setItem("user", email);
+  location.href = "store.html";
+}
+
+</script>
+
+</body>
+</html>

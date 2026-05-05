@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>الدعم</title>
+
+<style>
+body {background:#0f172a;color:white;text-align:center;font-family:Arial;}
+.card {background:#1e293b;margin:20px auto;padding:20px;width:320px;border-radius:15px;}
+input,textarea {padding:8px;margin:5px;width:90%;}
+button {padding:8px;margin:5px;background:#f59e0b;border:none;border-radius:6px;}
+</style>
+</head>
+
+<body>
+
+<h2>📩 إرسال تذكرة</h2>
+
+<input id="title" placeholder="العنوان"><br>
+<textarea id="msg" placeholder="الوصف"></textarea><br>
+<button onclick="send()">إرسال</button>
+
+<h2>📂 تذاكري</h2>
+<div id="tickets"></div>
+
+<script>
+
+let user = localStorage.getItem("user");
+if(!user){
+  alert("سجل دخول");
+  location.href="login.html";
+}
+
+/* إرسال */
+function send(){
+  fetch('/support',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      title: document.getElementById("title").value,
+      message: document.getElementById("msg").value,
+      user:user
+    })
+  });
+}
+
+/* عرض (يتحدث تلقائيًا) */
+function loadTickets(){
+  fetch('/support-list')
+  .then(r=>r.json())
+  .then(data=>{
+    const box = document.getElementById("tickets");
+    box.innerHTML = "";
+
+    data.forEach(s=>{
+      if(s.user===user){
+
+        const div=document.createElement("div");
+        div.className="card";
+
+        div.innerHTML=`
+          <p><b>${s.title}</b></p>
+          <p>${s.message}</p>
+          <p>💬 الرد: ${s.reply || "بانتظار الرد"}</p>
+        `;
+
+        box.appendChild(div);
+      }
+    });
+  });
+}
+
+/* 🔄 تحديث كل ثانيتين */
+setInterval(loadTickets, 2000);
+
+/* تشغيل أول مرة */
+loadTickets();
+
+</script>
+
+</body>
+</html>

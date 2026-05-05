@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>السلة</title>
+
+<style>
+body {background:#0f172a;color:white;text-align:center;font-family:Arial;}
+.card {background:#1e293b;margin:20px auto;padding:20px;width:300px;border-radius:15px;}
+button {padding:10px;margin:5px;background:#f59e0b;border:none;border-radius:6px;}
+</style>
+</head>
+
+<body>
+
+<h1>🛒 السلة</h1>
+
+<div id="cart"></div>
+
+<h2 id="total"></h2>
+
+<button onclick="checkout()">💳 ادفع الآن</button>
+
+<script>
+
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+function load(){
+  const box = document.getElementById("cart");
+  let total = 0;
+
+  box.innerHTML="";
+
+  cart.forEach(i=>{
+    total += Number(i.price);
+
+    const div = document.createElement("div");
+    div.className="card";
+
+    div.innerHTML=`
+      <h3>${i.name}</h3>
+      <p>${i.price} ريال</p>
+    `;
+
+    box.appendChild(div);
+  });
+
+  document.getElementById("total").innerText = "المجموع: " + total + " ريال";
+}
+
+function checkout(){
+
+  fetch('/order',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(cart)
+  })
+  .then(r=>r.json())
+  .then(()=>{
+    alert("تم الدفع بنجاح ✅");
+    localStorage.removeItem("cart");
+    location.href="store.html";
+  });
+}
+
+load();
+
+</script>
+
+</body>
+</html>

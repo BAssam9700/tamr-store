@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>لوحة الإدارة</title>
+
+<style>
+body {background:#0f172a;color:white;text-align:center;font-family:Arial;}
+.card {background:#1e293b;margin:20px auto;padding:20px;width:320px;border-radius:15px;}
+input {padding:8px;margin:5px;width:90%;}
+button {padding:8px;margin:5px;background:#f59e0b;border:none;border-radius:6px;}
+.delete {background:#ef4444;}
+</style>
+</head>
+
+<body>
+
+<h1>📊 لوحة الإدارة</h1>
+
+<!-- الطلبات -->
+<h2>📦 الطلبات</h2>
+<div id="orders"></div>
+
+<!-- الدعم -->
+<h2>📩 الدعم</h2>
+<div id="supports"></div>
+
+<script>
+
+/* حماية */
+let user = localStorage.getItem("user");
+if(user !== "admin@test.com"){
+  alert("غير مصرح");
+  location.href="login.html";
+}
+
+/* =========================
+   📦 الطلبات
+========================= */
+
+function loadOrders(){
+  fetch('/orders')
+  .then(r=>r.json())
+  .then(data=>{
+    const box = document.getElementById("orders");
+    box.innerHTML = "";
+
+    data.forEach(o=>{
+      const div = document.createElement("div");
+      div.className="card";
+
+      let items="";
+      o.items.forEach(i=>{
+        items += `<p>${i.name} - ${i.price} ريال</p>`;
+      });
+
+      div.innerHTML=`
+        <h3>طلب</h3>
+        ${items}
+        <p>الحالة: ${o.status}</p>
+        <button onclick="updateStatus(${o.id})">تم التنفيذ</button>
+      `;
+
+      box.appendChild(div);
+    });
+  });
+}
+
+/* تغيير الحالة */
+function updateStatus(id){
+  fetch('/order-status',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({id, status:"تم التنفيذ"})
+  });
+}
+
+/* =========================
+   📩 الدعم
+========================= */
+
+function loadSupports(){
+  fetch('/support-list')
+  .then(r=>r.json())
+  .then(data=>{
+    const box = document.getElementById("supports");
+    box.innerHTML = "";
+
+    data.forEach(s=>{
+      const div = document.createElement("div");
+      div.className="card";
+
+      div.innerHTML=`
+        <p><b>${s.title}</b></p>
+        <p>${s.message}</p>
+        <p>👤 ${s.user}</p>
+        <p>💬 الرد: ${s.reply || "لا يوجد"}</p>
+
+        <input id="r${s.id}" placeholder="اكتب رد">
+        <button onclick="reply(${s.id})">رد</button>
+
+        <button class="delete" onclick="del(${s.id})">حذف</button>
+      `;
+
+      box.appendChild(div);
+    });
+  });
+}
+
+/* رد */
+function reply(id){
+  const reply = document.getElementById("r"+id).value;
+
+  fetch('/reply',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({id,reply})
+  });
+}
+
+/* حذف */
+function del(id){
+  fetch('/delete-ticket',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({id})
+  });
+}
+
+/* 🔄 تحديث تلقائي */
+setInterval(()=>{
+  loadOrders();
+  loadSupports();
+},2000);
+
+/* تشغيل */
+loadOrders();
+loadSupports();
+
+</script>
+
+</body>
+</html>

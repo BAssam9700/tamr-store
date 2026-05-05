@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>لوحة الإدارة</title>
+<style>
+body {
+  font-family: Arial;
+  background: #f5f5f5;
+  text-align: center;
+}
+.ticket {
+  background: white;
+  margin: 10px;
+  padding: 10px;
+  border-radius: 10px;
+}
+input {
+  padding: 5px;
+  margin-top: 5px;
+}
+button {
+  background: #6b3e26;
+  color: white;
+  border: none;
+  padding: 5px;
+  cursor: pointer;
+}
+</style>
+</head>
+<body>
+
+<h1>📊 التذاكر</h1>
+
+<div id="tickets"></div>
+
+<script>
+function loadTickets(){
+ fetch('/tickets')
+ .then(r=>r.json())
+ .then(data=>{
+   let html="";
+   data.forEach(t=>{
+     html+=`
+     <div class="ticket">
+       <h3>${t.title}</h3>
+       <p>${t.desc}</p>
+       <p>الحالة: ${t.status}</p>
+       
+       <input id="reply-${t.id}" placeholder="اكتب رد">
+       <button onclick="sendReply(${t.id})">رد</button>
+
+       <p>الرد: ${t.reply || "لا يوجد"}</p>
+     </div>`;
+   });
+   document.getElementById("tickets").innerHTML=html;
+ });
+}
+
+function sendReply(id){
+ let text = document.getElementById("reply-"+id).value;
+
+ fetch('/reply',{
+  method:'POST',
+  headers:{'Content-Type':'application/json'},
+  body:JSON.stringify({
+    id:id,
+    reply:text
+  })
+ }).then(()=>{
+   alert("تم الرد ✅");
+   loadTickets();
+ });
+}
+
+loadTickets();
+</script>
+
+</body>
+</html>
